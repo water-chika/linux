@@ -2782,15 +2782,19 @@ static int prepare_coming_module(struct module *mod)
 	int err;
 
 	ftrace_module_enable(mod);
+	pr_info("prepare_coming_module(%p): ftrace_module_enable\n", mod);
 	err = klp_module_coming(mod);
 	if (err)
 		return err;
+	pr_info("prepare_coming_module(%p): klp_module_coming\n", mod);
 
 	err = blocking_notifier_call_chain_robust(&module_notify_list,
 			MODULE_STATE_COMING, MODULE_STATE_GOING, mod);
+	pr_info("prepare_coming_module(%p): blocking_notifier_call_chain_robust\n", mod);
 	err = notifier_to_errno(err);
 	if (err)
 		klp_module_going(mod);
+	pr_info("prepare_coming_module(%p): notifier_to_errno\n", mod);
 
 	return err;
 }
@@ -2854,6 +2858,7 @@ static int early_mod_check(struct load_info *info, int flags)
 static int load_module(struct load_info *info, const char __user *uargs,
 		       int flags)
 {
+	pr_info("load_module(%p) start\n", info);
 	struct module *mod;
 	bool module_allocated = false;
 	long err = 0;
@@ -2874,6 +2879,7 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	err = module_sig_check(info, flags);
 	if (err)
 		goto free_copy;
+	pr_info("load_module(%p): module_sig_check finish\n", info);
 
 	/*
 	 * Do basic sanity checks against the ELF header and
@@ -2883,6 +2889,7 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	err = elf_validity_cache_copy(info, flags);
 	if (err)
 		goto free_copy;
+	pr_info("load_module(%p): name: %s\n", info, info->name);
 
 	err = early_mod_check(info, flags);
 	if (err)
@@ -2941,16 +2948,20 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	err = simplify_symbols(mod, info);
 	if (err < 0)
 		goto free_modinfo;
+	pr_info("load_module(%p): simplify_symbols\n", info);
 
 	err = apply_relocations(mod, info);
 	if (err < 0)
 		goto free_modinfo;
+	pr_info("load_module(%p): apply_relocations\n", info);
 
 	err = post_relocation(mod, info);
 	if (err < 0)
 		goto free_modinfo;
+	pr_info("load_module(%p): post_relocation\n", info);
 
 	flush_module_icache(mod);
+	pr_info("load_module(%p): flush_module_icache\n", info);
 
 	/* Now copy in args */
 	mod->args = strndup_user(uargs, ~0UL >> 1);
@@ -2960,18 +2971,22 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	}
 
 	init_build_id(mod, info);
+	pr_info("load_module(%p): init_build_id\n", info);
 
 	/* Ftrace init must be called in the MODULE_STATE_UNFORMED state */
 	ftrace_module_init(mod);
+	pr_info("load_module(%p): ftrace_module_init\n", info);
 
 	/* Finally it's fully formed, ready to start executing. */
 	err = complete_formation(mod, info);
 	if (err)
 		goto ddebug_cleanup;
+	pr_info("load_module(%p): complete_format\n", info);
 
 	err = prepare_coming_module(mod);
 	if (err)
 		goto bug_cleanup;
+	pr_info("load_module(%p): prepare_coming_module\n", info);
 
 	mod->async_probe_requested = async_probe;
 
@@ -2986,6 +3001,7 @@ static int load_module(struct load_info *info, const char __user *uargs,
 		pr_warn("%s: parameters '%s' after `--' ignored\n",
 		       mod->name, after_dashes);
 	}
+	pr_info("load_module(%p): parse_args\n", info);
 
 	/* Link in to sysfs. */
 	err = mod_sysfs_setup(mod, info, mod->kp, mod->num_kp);
@@ -3000,13 +3016,18 @@ static int load_module(struct load_info *info, const char __user *uargs,
 
 	/* Get rid of temporary copy. */
 	free_copy(info, flags);
+	pr_info("load_module(%p): free_copy\n", info);
 
 	codetag_load_module(mod);
+	pr_info("load_module(%p): codetag_load_module\n", info);
 
 	/* Done! */
 	trace_module_load(mod);
+	pr_info("load_module(%p): trace_module_load\n", info);
 
-	return do_init_module(mod);
+	int ret = do_init_module(mod);
+	pr_info("load_module(%p) finished\n", info);
+	return ret;
 
  sysfs_cleanup:
 	mod_sysfs_teardown(mod);
@@ -3060,6 +3081,7 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	if (!module_allocated)
 		mod_stat_bump_becoming(info, flags);
 	free_copy(info, flags);
+	pr_info("load_module finished with error: %ld\n", err);
 	return err;
 }
 
