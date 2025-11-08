@@ -572,7 +572,7 @@ module_param_named(compute_multipipe, amdgpu_compute_multipipe, int, 0444);
  * Set to enable GPU recovery mechanism (1 = enable, 0 = disable). The default is -1 (auto, disabled except SRIOV).
  */
 MODULE_PARM_DESC(gpu_recovery, "Enable GPU recovery mechanism, (1 = enable, 0 = disable, -1 = auto)");
-module_param_named(gpu_recovery, amdgpu_gpu_recovery, int, 0444);
+module_param_named(gpu_recovery, amdgpu_gpu_recovery, int, 0600);
 
 /**
  * DOC: emu_mode (int)
