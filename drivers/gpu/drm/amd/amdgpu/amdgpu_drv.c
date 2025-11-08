@@ -1572,7 +1572,7 @@ static int amdgpu_pci_probe(struct pci_dev *pdev,
 	struct drm_device *ddev;
 	struct amdgpu_device *adev;
 	unsigned long flags = ent->driver_data;
-	int ret, retry = 0, i;
+	int ret, retry = 0;
 	bool supports_atomic = false;
 
 	if (amdgpu_aspm == -1 && !pcie_aspm_enabled(pdev))
