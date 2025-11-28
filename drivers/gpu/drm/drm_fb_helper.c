@@ -58,6 +58,19 @@ MODULE_PARM_DESC(drm_fbdev_overalloc,
 		 "Overallocation of the fbdev buffer (%) [default="
 		 __MODULE_STRING(CONFIG_DRM_FBDEV_OVERALLOC) "]");
 
+static bool drm_fbdev_only_one_connector = false;
+module_param(drm_fbdev_only_one_connector, bool, 0600);
+MODULE_PARM_DESC(drm_fbdev_only_one_connector,
+		 "Only enable one connector for fbdev");
+static uint16_t drm_fbdev_preferred_display_vendor = 0;
+module_param(drm_fbdev_preferred_display_vendor, uint16_t, 0600);
+MODULE_PARM_DESC(drm_fbdev_preferred_display_vendor,
+		 "Preferred display vendor when only enable one connector for fbdev");
+static uint16_t drm_fbdev_preferred_display_model = 0;
+module_param(drm_fbdev_preferred_display_model, uint16_t, 0600);
+MODULE_PARM_DESC(drm_fbdev_preferred_display_model,
+		 "Preferred display model when only enable one connector for fbdev");
+
 /*
  * In order to keep user-space compatibility, we want in certain use-cases
  * to keep leaking the fbdev physical address to the user-space program
@@ -1826,7 +1839,8 @@ __drm_fb_helper_initial_config_and_unlock(struct drm_fb_helper *fb_helper)
 	width = dev->mode_config.max_width;
 	height = dev->mode_config.max_height;
 
-	drm_client_modeset_probe(&fb_helper->client, width, height);
+	drm_client_modeset_probe(&fb_helper->client, width, height,
+            drm_fbdev_only_one_connector, drm_fbdev_preferred_display_vendor, drm_fbdev_preferred_display_model);
 	ret = drm_fb_helper_single_fb_probe(fb_helper);
 	if (ret < 0) {
 		if (ret == -EAGAIN) {
@@ -1964,7 +1978,8 @@ int drm_fb_helper_hotplug_event(struct drm_fb_helper *fb_helper)
 
 	drm_dbg_kms(fb_helper->dev, "\n");
 
-	drm_client_modeset_probe(&fb_helper->client, fb_helper->fb->width, fb_helper->fb->height);
+	drm_client_modeset_probe(&fb_helper->client, fb_helper->fb->width, fb_helper->fb->height,
+            drm_fbdev_only_one_connector, drm_fbdev_preferred_display_vendor, drm_fbdev_preferred_display_model);
 	drm_setup_crtcs_fb(fb_helper);
 	mutex_unlock(&fb_helper->lock);
 

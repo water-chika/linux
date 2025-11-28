@@ -814,7 +814,9 @@ bail:
  * Returns:
  * Zero on success or negative error code on failure.
  */
-int drm_client_modeset_probe(struct drm_client_dev *client, unsigned int width, unsigned int height)
+int drm_client_modeset_probe(struct drm_client_dev *client, unsigned int width, unsigned int height,
+        bool only_one_connector,
+        uint16_t preferred_display_vendor, uint16_t preferred_display_model)
 {
 	struct drm_connector *connector, **connectors = NULL;
 	struct drm_connector_list_iter conn_iter;
@@ -846,6 +848,18 @@ int drm_client_modeset_probe(struct drm_client_dev *client, unsigned int width, 
 
 		connectors = tmp;
 		drm_connector_get(connector);
+        if (connector->edid_blob_ptr && connector->edid_blob_ptr->data && connector->edid_blob_ptr->length > 0x0b) {
+            uint16_t* vendor_ptr = (uint16_t*)(connector->edid_blob_ptr->data + 0x08);
+            uint16_t* model_ptr = (uint16_t*)(connector->edid_blob_ptr->data + 0x0a);
+            if (only_one_connector
+                    && *vendor_ptr == preferred_display_vendor
+                    && *model_ptr == preferred_display_model) {
+                connectors = krealloc(connectors, (connector_count + 1) * sizeof(*connectors), GFP_KERNEL);
+                connectors[0] = connector;
+                connector_count = 1;
+                break;
+            }
+        }
 		connectors[connector_count++] = connector;
 	}
 	drm_connector_list_iter_end(&conn_iter);

@@ -240,6 +240,7 @@ STANDARD_PARAM_DEF(long,	long,			"%li",		kstrtol);
 STANDARD_PARAM_DEF(ulong,	unsigned long,		"%lu",		kstrtoul);
 STANDARD_PARAM_DEF(ullong,	unsigned long long,	"%llu",		kstrtoull);
 STANDARD_PARAM_DEF(hexint,	unsigned int,		"%#08x", 	kstrtouint);
+STANDARD_PARAM_DEF(uint16_t, uint16_t, "%hu",           kstrtou16);
 
 int param_set_uint_minmax(const char *val, const struct kernel_param *kp,
 		unsigned int min, unsigned int max)

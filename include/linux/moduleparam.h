@@ -431,6 +431,11 @@ extern int param_set_ushort(const char *val, const struct kernel_param *kp);
 extern int param_get_ushort(char *buffer, const struct kernel_param *kp);
 #define param_check_ushort(name, p) __param_check(name, p, unsigned short)
 
+extern const struct kernel_param_ops param_ops_uint16_t;
+extern int param_set_uint16_t(const char *val, const struct kernel_param *kp);
+extern int param_get_uint16_t(char *buffer, const struct kernel_param *kp);
+#define param_check_uint16_t(name, p) __param_check(name, p, uint16_t)
+
 extern const struct kernel_param_ops param_ops_int;
 extern int param_set_int(const char *val, const struct kernel_param *kp);
 extern int param_get_int(char *buffer, const struct kernel_param *kp);

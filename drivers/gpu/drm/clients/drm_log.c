@@ -241,7 +241,7 @@ static void drm_log_init_client(struct drm_log *dlog)
 
 	dlog->probed = true;
 
-	if (drm_client_modeset_probe(client, 0, 0))
+	if (drm_client_modeset_probe(client, 0, 0, false, 0, 0))
 		return;
 
 	max_modeset = drm_log_count_modeset(client);
